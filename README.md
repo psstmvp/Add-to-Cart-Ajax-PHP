@@ -28,7 +28,9 @@ Ensure your database has the following structure:
 |-----------------|--------------|-------------------------------------------|
 | `booking_id`    | INT          | Primary key, auto-incremented booking ID. |
 | `mechanic_id`   | INT          | ID of the mechanic.                       |
-| `booking_status`| TINYINT      | Status of the booking (0 for active).     |
+| `booking_status`| INT          | Status of the booking (0 for active).     |
+| `booking_amount`| INT          | Total amount after checkout.              |
+| `booking_date`  | INT          | Date of booking.                          |
 
 ### Table: `tbl_cart`
 
@@ -37,7 +39,7 @@ Ensure your database has the following structure:
 | `cart_id`     | INT          | Primary key, auto-incremented cart ID.     |
 | `product_id`  | INT          | ID of the product being added.             |
 | `booking_id`  | INT          | ID of the associated booking.              |
-| `cart_status` | TINYINT      | Status of the cart item (0 for active).    |
+| `cart_status` | INT      | Status of the cart item (0 for active).    |
 
 ## Installation
 
