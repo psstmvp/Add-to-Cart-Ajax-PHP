@@ -1,11 +1,11 @@
 <?php
 include("../Connection/Connection.php");
 session_start();
-$selqry="select * from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+$selqry="select * from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
 $result=$conn->query($selqry);
 if($result->num_rows>0)
 {
-    $selqry="select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+    $selqry="select MAX(booking_id) as id from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
 	$res=$conn->query($selqry);
 	$row=$res->fetch_assoc();
 	$bid = $row["id"];
@@ -30,10 +30,10 @@ if($result->num_rows>0)
 }
 else
 {
-    $insqry="insert into tbl_booking(mechanic_id) value('".$_SESSION['mid']."')";
+    $insqry="insert into tbl_booking(user_id) value('".$_SESSION['uid']."')";
     if ($conn->query($insqry))
     {
-        $selqry="select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+        $selqry="select MAX(booking_id) as id from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
         $res=$conn->query($selqry);
         if($row=$res->fetch_assoc())
         {

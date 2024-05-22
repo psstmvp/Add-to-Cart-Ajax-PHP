@@ -39,7 +39,7 @@ Ensure your database has the following structure:
 | `cart_id`     | INT          | Primary key, auto-incremented cart ID.     |
 | `product_id`  | INT          | ID of the product being added.             |
 | `booking_id`  | INT          | ID of the associated booking.              |
-| `cart_status` | INT      | Status of the cart item (0 for active).    |
+| `cart_status` | INT          | Status of the cart item (0 for active).    |
 
 ## Installation
 
@@ -75,7 +75,7 @@ This script is designed to be called via an Ajax request when a product is added
 ```javascript
 function addCart(pid){
     $.ajax({
-        url: 'path/to/your/AjaxAddCart.php?pid=' +pid,
+        url: 'path/to/your/AjaxAddCart.php?pid=' + pid,
         success: function(response) {
             alert(response);
         }
@@ -97,41 +97,74 @@ function addCart(pid){
 2. **Check for Existing Booking**
 
    - Query `tbl_booking` to check if there's an active booking for the current mechanic.
-   - If a booking exists, fetch the booking ID.
+   - If a booking exists, fetch the latest booking ID for the mechanic.
 
    ```php
-   $selqry="select * from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
-   $result=$conn->query($selqry);
+   $selqry = "select * from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+   $result = $conn->query($selqry);
    ```
 
-3. **Check if Product is Already in Cart**
+3. **If Booking Exists**
+
+   - Retrieve the booking ID.
+
+   ```php
+   $selqry = "select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+   $res = $conn->query($selqry);
+   $row = $res->fetch_assoc();
+   $bid = $row["id"];
+   ```
+
+4. **Check if Product is Already in Cart**
 
    - Query `tbl_cart` to check if the product is already added to the cart within the active booking.
 
    ```php
-   $selqry="select * from tbl_cart where booking_id='".$bid."' and product_id='".$_GET["id"]."' and cart_status='0'";
+   $selqry = "select * from tbl_cart where booking_id='".$bid."' and product_id='".$_GET["id"]."' and cart_status='0'";
+   $result = $conn->query($selqry);
    ```
 
-4. **Add Product to Cart**
+5. **Add Product to Cart**
 
    - If the product is not in the cart, insert it into `tbl_cart`.
-   - If no active booking exists, create a new booking and then add the product to the cart.
 
    ```php
-   $insQry1="insert into tbl_cart(product_id,booking_id)values('".$_GET["id"]."','".$row["id"]."')";
-   if($conn->query($insQry1)) { echo "Added to Cart"; }
-   else { echo "Failed"; }
+   if ($result->num_rows == 0) {
+       $insQry1 = "insert into tbl_cart(product_id, booking_id) values('".$_GET["id"]."', '".$bid."')";
+       if ($conn->query($insQry1)) {
+           echo "Added to Cart";
+       } else {
+           echo "Failed";
+       }
+   } else {
+       echo "Already Added to Cart";
+   }
    ```
 
-5. **Handle Booking Creation**
+6. **If No Booking Exists**
 
-   - If no active booking is found, create a new booking for the mechanic.
+   - Create a new booking for the mechanic.
 
    ```php
-   $insqry="insert into tbl_booking(mechanic_id) value('".$_SESSION['mid']."')";
+   else {
+       $insqry = "insert into tbl_booking(mechanic_id) value('".$_SESSION['mid']."')";
+       if ($conn->query($insqry)) {
+           $selqry = "select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+           $res = $conn->query($selqry);
+           if ($row = $res->fetch_assoc()) {
+               $bid = $row["id"];
+               $insQry1 = "insert into tbl_cart(product_id, booking_id) values('".$_GET["id"]."', '".$bid."')";
+               if ($conn->query($insQry1)) {
+                   echo "Added to Cart";
+               } else {
+                   echo "Failed";
+               }
+           }
+       }
+   }
    ```
 
-6. **Return Response**
+7. **Return Response**
 
    - Send an appropriate response back to the client based on the outcome of the database operations.
 
