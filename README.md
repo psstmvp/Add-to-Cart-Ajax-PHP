@@ -1,6 +1,6 @@
 # Shopping Cart Ajax Handler
 
-This PHP script handles the addition of products to a cart for a shopping site. It ensures that the product is not already in the cart before adding it, and it manages booking sessions for a mechanic. The script is designed to be used with Ajax requests for a seamless user experience.
+This PHP script handles the addition of products to a cart for a shopping site. It ensures that the product is not already in the cart before adding it, and it manages booking sessions for a user. The script is designed to be used with Ajax requests for a seamless user experience.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ Before using this script, ensure you have the following:
 
 - PHP environment set up on your server.
 - MySQL database with the necessary tables (`tbl_booking` and `tbl_cart`).
-- A session mechanism in place for managing user sessions, specifically the mechanic's session (`$_SESSION["mid"]`).
+- A session mechanism in place for managing user sessions, specifically the user's session (`$_SESSION["uid"]`).
 
 ## Database Structure
 
@@ -27,7 +27,7 @@ Ensure your database has the following structure:
 | Column          | Type         | Description                               |
 |-----------------|--------------|-------------------------------------------|
 | `booking_id`    | INT          | Primary key, auto-incremented booking ID. |
-| `mechanic_id`   | INT          | ID of the mechanic.                       |
+| `user_id`       | INT          | ID of the user.                           |
 | `booking_status`| INT          | Status of the booking (0 for active).     |
 | `booking_amount`| INT          | Total amount after checkout.              |
 | `booking_date`  | INT          | Date of booking.                          |
@@ -64,7 +64,7 @@ if ($conn->connect_error) {
 ?>
 ```
 
-3. **Session Management**: Ensure sessions are started and the mechanic's ID is stored in `$_SESSION["mid"]`.
+3. **Session Management**: Ensure sessions are started and the user's ID is stored in `$_SESSION["uid"]`.
 
 ## Usage
 
@@ -96,11 +96,11 @@ function addCart(pid){
 
 2. **Check for Existing Booking**
 
-   - Query `tbl_booking` to check if there's an active booking for the current mechanic.
-   - If a booking exists, fetch the latest booking ID for the mechanic.
+   - Query `tbl_booking` to check if there's an active booking for the current user.
+   - If a booking exists, fetch the latest booking ID for the user.
 
    ```php
-   $selqry = "select * from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+   $selqry = "select * from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
    $result = $conn->query($selqry);
    ```
 
@@ -109,7 +109,7 @@ function addCart(pid){
    - Retrieve the booking ID.
 
    ```php
-   $selqry = "select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+   $selqry = "select MAX(booking_id) as id from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
    $res = $conn->query($selqry);
    $row = $res->fetch_assoc();
    $bid = $row["id"];
@@ -143,13 +143,13 @@ function addCart(pid){
 
 6. **If No Booking Exists**
 
-   - Create a new booking for the mechanic.
+   - Create a new booking for the user.
 
    ```php
    else {
-       $insqry = "insert into tbl_booking(mechanic_id) value('".$_SESSION['mid']."')";
+       $insqry = "insert into tbl_booking(user_id) value('".$_SESSION['mid']."')";
        if ($conn->query($insqry)) {
-           $selqry = "select MAX(booking_id) as id from tbl_booking where mechanic_id='".$_SESSION["mid"]."' and booking_status='0'";
+           $selqry = "select MAX(booking_id) as id from tbl_booking where user_id='".$_SESSION["uid"]."' and booking_status='0'";
            $res = $conn->query($selqry);
            if ($row = $res->fetch_assoc()) {
                $bid = $row["id"];
